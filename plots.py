@@ -335,3 +335,91 @@ def plotmap(plotvars1,plotvars2,
     panelres.nglPaperOrientation = "Auto"
 
     plot = Ngl.panel(wks,toplot,[nplots,2],panelres)
+
+def getFITcolorbars(Datain,minGBin,splittypein,varin):
+    cbmin = -1
+    cbmax = -1
+    if splittypein == 'day':
+        if Datain in ["TRMM"]:
+            if varin in ['TDensity']:
+                cbmin,cbmax = [0.0,98.0,0.0,0.0,0.0,0.0],[300,100.0,1.0,0.2,0.05,1.0]
+            elif varin in ['TPrecip']:
+                cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,90.0,40.0,40.0,40.0,40.0]
+
+        elif Datain in ["TRMMERAIgd"]:
+            if minGBin in [4,9]:
+                if varin in ['TDensity']:
+                    cbmin,cbmax = [0.0,70.0,0.0,0.0,0.0,0.0],[6,100.0,20.0,7.0,4.0,3.0]
+                elif varin in ['TPrecip']: 
+                    cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,80.0,50.0,50.0,50.0,50.0]
+
+            else:
+                if varin in ['TDensity']:
+                    cbmin,cbmax = [0.0,90.0,0.0,0.0,0.0,0.0],[10,100.0,15.0,5.0,2.0,3.0]
+                elif varin in ['TPrecip']: 
+                    cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,80.0,40.0,50.0,50.0,50.0]
+
+        elif Datain in ["ERAI"]:
+            if minGB in [4,9]:
+                if varin in ['TDensity']:
+                    cbmin,cbmax = [0.0,70.0,0.0,0.0,0.0,0.0],[6,100.0,20.0,7.0,4.0,3.0]
+                elif varin in ['TPrecip']:
+                    cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,80.0,50.0,50.0,50.0,50.0]
+
+            else:
+                if varin in ['TDensity']:
+                    cbmin,cbmax = [0.0,90.0,0.0,0.0,0.0,0.0],[10,100.0,15.0,5.0,2.0,3.0]
+                elif varin in ['TPrecip']:
+                    cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,80.0,40.0,50.0,50.0,50.0]
+
+        elif Datain in ["ERA20C"]:
+            if varin in ['TDensity']:
+                cbmin,cbmax = [0.0,90.0,0.0,0.0,0.0,0.0],[15,100.0,4.0,3.0,2.0,4.0]
+            elif varin in ['TPrecip']:
+                cbmin,cbmax =[0.0,0.0,0.0,0.0,0.0,0.0],[100,70.0,30.0,50.0,50.0,50.0]
+
+        elif Datain in ["CESM"]:
+            if varin in ['TDensity']:
+                cbmin,cbmax = [0.0,90.0,0.0,0.0,0.0],[50,100.0,5.0,3.0,0.5]
+            elif varin in ['TPrecip']:
+                cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0],[100,90.0,40.0,40.0,40.0]  
+
+    elif splittype == 'maxspeed':
+        if Datain == "TRMM":
+            if varin in ['TDensity']:
+                cbmin,cbmax = [0.0,0.0,0.0,95.0,0.0,0.0,0.0],[0.5,0.75,5.0,100.0,5.0,0.75,0.5]
+            elif varin in ['TPrecip']:
+                cbmin,cbmax = [0.0,0.0,0.0,20.0,0.0,0.0,0.0],[30,30.0,30.0,100.0,30.0,30.0,30.0]
+
+        elif Datain in ["TRMMERAIgd"]:
+            if varin in ['TDensity']:
+                cbmin,cbmax  = [0.0,0.0,0.0,90.0,0.0,0.0,0.0],[0.5,1.0,5.0,100.0,5.0,1.0,0.5]
+            elif varin in ['TPrecip']:
+                cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0,0.0],[30,30.0,30.0,100.0,30.0,30.0,30.0]
+
+        elif Datain in ["ERAI"]:
+            if varin in ['TDensity']:
+                cbmin,cbmax = [0.0,0.0,0.0,90.0,0.0,0.0,0.0],[0.5,1.0,5.0,100.0,5.0,1.0,0.5]
+            elif varin in ['TPrecip']:
+                cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0,0.0],[30,30.0,30.0,100.0,30.0,30.0,30.0]
+
+        elif Datain == "CESM":
+            if varin in ['TDensity']:
+                cbmin,cbmax = [0.0,90.0,0.0,0.0,0.0],[50,100.0,5.0,3.0,0.5]
+            elif varin in ['TPrecip']:
+                cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0],[20,90.0,40.0,40.0,40.0]
+
+        elif Datain in ["ERA20C"]:
+            if varin in ['TDensity']:
+                cbmin,cbmax = [0.0,90.0,0.0,0.0,0.0,0.0],[15,100.0,4.0,3.0,2.0,4.0]
+            elif varin in ['TPrecip']:
+                cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,70.0,30.0,50.0,50.0,50.0]
+
+    if (cbmin,cbmax) == (-1,-1):
+        print(Datain,varin,splittype,minGBin)
+        exit('the combination of input parameters is not yet assigned a
+              colorbar. Please go to rhwhitepackages/plots and add the colorbar
+              values that you want')
+
+    return(cbmin,cbmax)
+
