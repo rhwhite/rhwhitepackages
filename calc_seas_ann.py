@@ -11,7 +11,6 @@ import numpy as np
 import datetime as dt
 import pandas
 import xray
-import Ngl
 from scipy import stats
 
 dayinmon = [31,28,31,30,31,30,31,31,30,31,30,31]

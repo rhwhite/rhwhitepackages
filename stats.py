@@ -6,7 +6,7 @@ import numpy as np
 import datetime as dt
 import pandas
 import xray
-import stats
+from scipy import stats
 
 def regressmaps(m,c,r,p,stderr,A,linreg,nlats,nlons):
 # Calculate linear trend

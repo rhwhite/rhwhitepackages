@@ -22,7 +22,12 @@ def initcontourplot(resMP,plotstartlat,plotstartlon,plotendlat,plotendlon,lats,l
         resMP.cnFillOn = True
         resMP.cnMonoFillPattern = True
         resMP.cnMonoFillColor = False
+
+        resMP.cnMissingValFillColor = "white"
+
         resMP.cnLineLabelsOn = False
+        resMP.cnInfoLabelOn         = False    # Turn off informational
+
         resMP.cnLinesOn = False
         resMP.cnSmoothingOn = False
         resMP.cnLevelSelectionMode = "ManualLevels"
@@ -171,7 +176,7 @@ def setmissing(inarray,missingv):
 	return(inarray)
 
 
-def plotline(nlines,plotin,yearsin,nsep,title,Datatitle,figtitlein.colormap,xString,yString,unit):
+def plotline(nlines,plotin,yearsin,nsep,title,Datatitle,figtitlein,colormap,xString,yString,unit):
         wkres = Ngl.Resources()
         wkres.wkColorMap = colormap
         wks_type = "eps"
@@ -234,3 +239,99 @@ def plotline(nlines,plotin,yearsin,nsep,title,Datatitle,figtitlein.colormap,xStr
 
         print 'panelled'
 
+def plotmap(plotvars1,plotvars2,
+            plotmin1,plotmax1,plotmin2,plotmax2,
+            vartitle1,vartitle2,
+            title,
+            figtitle,
+            lons,lats,
+            minlon,maxlon,minlat,maxlat,
+            FillValue):
+
+    nplots = plotvars1.shape[0]
+    wkres = Ngl.Resources()
+    wkres.wkColorMap = "precip_diff_12lev"
+    wks_type = "eps"
+    wks = Ngl.open_wks(wks_type,figtitle,wkres)
+
+    # if lons start negative, shift everything over so there isn't a line down
+    # the middle of the Pacific
+    if lons[0] < 0:
+        nlonhalf = nlons/2
+        lonsnew = np.zeros(lons.shape,np.float)
+        lonsnew[0:nlonhalf] = lons[nlonhalf:nlons]
+        lonsnew[nlonhalf:nlons] = lons[0:nlonhalf] + 360.0
+        lons = lonsnew
+
+        for iplot in range(0,nplots):
+            plotvars1[iplot] = shiftlons(plotvars1[iplot],lons)
+            plotvars2[iplot] = shiftlons(plotvars2[iplot],lons)
+    else:
+        lonsnew = lons
+
+    # initialize plotting resources
+    res = Ngl.Resources()
+    res = initcontourplot(res,minlat,minlon,maxlat,maxlon,lats,lonsnew)
+    res.sfMissingValueV = FillValue
+
+    #    res.pmLabelBarDisplayMode = "Always"
+
+    #res.sfXCStartV = float(lonsnew[0])
+    #res.sfXCEndV = float(lonsnew[len(lons)-1])
+    #res.sfYCStartV = float(lats[0])
+    #res.sfYCEndV = float(lats[len(lats)-1])
+
+    res.lbOrientation   = "Vertical"
+
+    # including some font heights
+    res.lbLabelFontHeightF = 0.0125
+    res.lbTitleFontHeightF = 0.0125
+    res.tiMainFontHeightF = 0.015
+
+    # initialize plotting array
+    toplot = []
+    # fill plotting array
+    for iplot in range(0,nplots):
+        tempplot = plotvars1[iplot]
+        tempplot[np.where(np.isnan(tempplot))] = FillValue
+        res.cnMinLevelValF       = plotmin1[iplot]          # contour levels.
+        res.cnMaxLevelValF       = plotmax1[iplot]
+        res.cnLevelSpacingF      = ((plotmax1[iplot]-plotmin1[iplot])/10.0)
+        res.tiMainString = (vartitle1[iplot])
+        toplot.append(Ngl.contour_map(wks,tempplot,res))
+
+        tempplot = plotvars2[iplot]
+        tempplot[np.where(np.isnan(tempplot))] = FillValue
+        res.cnMinLevelValF       = plotmin2[iplot]          # contour levels.
+        res.cnMaxLevelValF       = plotmax2[iplot]
+        res.cnLevelSpacingF      = ((plotmax2[iplot]-plotmin2[iplot])/10.0)
+        res.tiMainString = vartitle2[iplot]
+        toplot.append(Ngl.contour_map(wks,tempplot,res))
+
+    textres = Ngl.Resources()
+    textres.txFontHeightF = 0.015
+    Ngl.text_ndc(wks,title,0.5,0.87,textres)
+
+    panelres = Ngl.Resources()
+    panelres.nglPanelLabelBar = True
+    #panelres.nglPanelYWhiteSpacePercent = 5.
+    #panelres.nglPanelXWhiteSpacePercent = 5.
+
+    panelres.nglPanelLabelBar   = False     # Turn on panel labelbar
+    if nplots > 5:
+        panelres.nglPanelTop                      = 0.8
+        panelres.nglPanelBottom                      = 0.15
+    else:
+        panelres.nglPanelTop                      = 0.95
+        panelres.nglPanelBottom                      = 0.01
+
+    panelres.nglPanelFigureStrings = ['a','b','c','d','e','f','g','h']
+    panelres.nglPanelFigureStringsJust = "TopLeft"
+    panelres.nglPanelFigureStringsFontHeightF = 0.008
+    panelres.nglPanelFigureStringsParallelPosF = -0.55
+    panelres.nglPanelFigureStringsOrthogonalPosF = -0.6
+    #panelres.amJust = "TopLeft"
+
+    panelres.nglPaperOrientation = "Auto"
+
+    plot = Ngl.panel(wks,toplot,[nplots,2],panelres)

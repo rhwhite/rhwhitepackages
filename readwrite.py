@@ -7,10 +7,8 @@ import datetime as dt
 import pandas
 import xray
 import sys
-import stats
 
 def xrayOpen(filenamein,decodetimes=True):
-
         try:
                 if decodetimes:
                         filein= xray.open_dataset(filenamein)
@@ -57,3 +55,154 @@ def getunitsdesc(invarname):
                 'xmaxspeed_1ts': ['m/s','maximum event zonal speed over 1 timestep'] ,
                 }[invarname]
 
+
+def getdenfilename(mappingi, datai, versioni, fstartyri, fendyri, iboundi, splittypei, uniti, speedtspani, minGBi, tbound1i, tbound2i, monanni,sumlatsi,sumlonsi):
+    if splittypei == "maxspeed":
+        fileTypeadd = "MaxSpeeds_" + str(speedtspani) + "ts_"
+    elif splittypei == "speed":
+        fileTypeadd = "Speeds_"
+    elif splittypei == "day":
+        fileTypeadd = "Sizes_"
+    else:
+        exit("unexpected splittype")
+
+    if minGBi > 0:
+        fileadd = '_min' + str(minGBi) + 'GB'
+    else:
+        fileadd = ''
+    
+    if tbound1i[iboundi] < 0:
+        tboundtitle = str(tbound1i[iboundi]) + '-' + str(tbound2i[iboundi]) + uniti
+    else:
+        tboundtitle = str(tbound1i[iboundi]) + '-' + str(tbound2i[iboundi]) + uniti
+    
+    if sumlatsi > 0:
+        addsumlats = '_regrid_' + str(sumlonsi) + 'lons_' + str(sumlatsi) + 'lats'
+    else:
+        addsumlats = ''
+
+    fileName = ('DenDirSpd_Map_' + monanni + '_' + fileTypeadd + tboundtitle + '_' + mappingi + '_' 
+                    + datai + "_" + str(fstartyri) + '-' + str(fendyri) + '_' + versioni 
+                    + fileadd + addsumlats + '.nc')
+    return(fileName)
+
+def getPrecipfilename(mappingi, datai, versioni, fstartyri, fendyri, iboundi, splittypei, uniti, speedtspani, minGBi, tbound1i, tbound2i):
+    if splittypei == "maxspeed":
+        fileTypeadd = "MaxSpeeds_" + str(speedtspani) + "ts_"
+    elif splittypei == "speed":
+        fileTypeadd = "Speeds_"
+    elif splittypei == "day":
+        fileTypeadd = "Sizes_"
+    else:
+        exit("unexpected splittype")
+
+    if tbound1i[iboundi] < 0:
+        tboundtitle = str(tbound1i[iboundi]) + '-' + str(tbound2i[iboundi])
+    else:
+        tboundtitle = str(tbound1i[iboundi]) + '-' + str(tbound2i[iboundi])
+
+    if minGBi > 0:
+        fileaddGB = '_min' + str(minGBi) + 'GB'
+    else:
+        fileaddGB = ''
+
+    if mappingi != 'center':
+        fileaddmap = mappingi
+    else:
+        fileaddmap = ''
+
+    return('Precip_' + fileTypeadd + tboundtitle + uniti + "_" + str(fstartyri) + '-' + str(fendyri) + '_' + versioni + fileaddGB + '.nc')
+
+def getrawPrecipAnn(Data,Version,minlat,maxlat,anstartyr,anendyr):
+    base = '/home/disk/eos4/rachel/EventTracking/'
+    if Data == "TRMM":
+        Fstartyr = 1998
+        Fendyr = 2014
+        PrecipClimDir = "/home/disk/eos4/rachel/Obs/TRMM/"
+        PrecipClimFile = "TRMM_1998-2014_clim_ann_1998-2014.nc"
+
+    elif Data == "TRMMERAIgd":
+        Fstartyr = 1998
+        Fendyr = 2014
+        PrecipClimDir = "/home/disk/eos4/rachel/Obs/TRMM/"
+        PrecipClimFile = "regrid2ERAI_TRMM_3B42_1998-2014_annclim.nc"
+
+    elif Data == "ERAI":
+        Fstartyr = 1980
+        Fendyr = 2014
+        PrecipClimDir = '/home/disk/eos4/rachel/Obs/ERAI/Precip_3hrly/'
+        PrecipClimFile = 'ERAI_Totalprecip_1980-2015_annmean.nc'
+
+    elif Data == "ERA20C":
+        Fstartyr = 1980
+        Fendyr = 2011
+        PrecipClimDir = '/home/disk/eos4/rachel/Obs/ERA_20C/'
+        PrecipClimFile = ('ERA_20C_Ann_Totalprecip_' + str(Fstartyr) + '-' +
+                            str(Fendyr) + '.nc')
+
+    elif Data == "CESM":
+        Fstartyr = 1990
+        Fendyr = 2014
+
+        PrecipClimDir = ('/home/disk/eos4/rachel/EventTracking/Inputs/' +
+                            'CESM/f.e13.FAMPIC5.ne120_ne120.1979_2012.001/')
+        PrecipClimFile = 'ncra_f.e13.FAMIPC5.ne120_ne120_TotalPrecip_1979-2012.nc'
+
+    # open up precip file
+    FileInPrecip = xrayOpen(PrecipClimDir + PrecipClimFile)
+
+    if Data in ['TRMM']:
+        latin = FileInPrecip['latitude']
+        invar = 'pcp'
+
+    elif Data in ['TRMMERAIgd']:
+        latin = FileInPrecip['lat']
+        invar = 'pcp'
+
+    elif Data in ["ERAI","ERA20C"]:
+        latin = FileInPrecip['lat']
+        invar = 'tpnew'
+
+    elif Data in ["CESM"]:
+        latin = FileInPrecip['lat']
+        invar = 'PRECT'
+
+    if latin[0] > latin[1]:
+        PrecipIn = (FileInPrecip[invar][:,::-1,:].sel(lat=slice(minlat,maxlat))
+                                            .sel(time=slice(str(anstartyr),str(anendyr))))
+    else:
+        PrecipIn = (FileInPrecip[invar].sel(latitude=slice(minlat,maxlat))
+                                        .sel(time=slice(str(anstartyr),str(anendyr))))
+
+    try:
+        print np.amax(PrecipIn)
+        if PrecipIn.units == "mm/hr":
+            print 'converting'
+            PrecipIn = PrecipIn * 24.0 #convert to mm/day
+        elif PrecipIn.units == "mm/day":
+            pass
+        else:
+            error("unexpected unit in Precip file")
+    except AttributeError:
+        if np.amax(PrecipIn) < 5.0:
+            print("guessing we need to convert precip units! You should" + 
+                     "check this!")
+            PrecipIn = PrecipIn * 24.0 #convert to mm/day
+        else:
+            print("guessing that we don't need to convert precip units" +
+                    " - you should check this!")
+
+    return(PrecipIn)
+
+
+def getdirectory(splittype):
+    if splittype == "maxspeed":
+        diradd = "MaxSpeeds"
+    elif splittype == "speed":
+        diradd = "Speeds"
+    elif splittype == "day":
+        diradd = "Sizes"
+    else:
+        exit("unexpected splittype")
+
+    return diradd  
