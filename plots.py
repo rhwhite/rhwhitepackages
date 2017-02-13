@@ -360,7 +360,7 @@ def getFITcolorbars(Datain,minGBin,splittypein,varin):
                     cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,80.0,40.0,50.0,50.0,50.0]
 
         elif Datain in ["ERAI"]:
-            if minGB in [4,9]:
+            if minGBin in [4,9]:
                 if varin in ['TDensity']:
                     cbmin,cbmax = [0.0,70.0,0.0,0.0,0.0,0.0],[6,100.0,20.0,7.0,4.0,3.0]
                 elif varin in ['TPrecip']:
@@ -417,9 +417,9 @@ def getFITcolorbars(Datain,minGBin,splittypein,varin):
 
     if (cbmin,cbmax) == (-1,-1):
         print(Datain,varin,splittype,minGBin)
-        exit('the combination of input parameters is not yet assigned a
-              colorbar. Please go to rhwhitepackages/plots and add the colorbar
-              values that you want')
+        exit('the combination of input parameters is not yet assigned a ' +
+              'colorbar. Please go to rhwhitepackages/plots and add the ' +
+              'colorbar values that you want')
 
     return(cbmin,cbmax)
 

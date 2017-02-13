@@ -148,6 +148,9 @@ def getrawPrecipAnn(Data,Version,minlat,maxlat,anstartyr,anendyr):
                             'CESM/f.e13.FAMPIC5.ne120_ne120.1979_2012.001/')
         PrecipClimFile = 'ncra_f.e13.FAMIPC5.ne120_ne120_TotalPrecip_1979-2012.nc'
 
+    else:
+        exit('not set up for Data type ' + Data + ' version ' + Version)
+
     # open up precip file
     FileInPrecip = xrayOpen(PrecipClimDir + PrecipClimFile)
 
