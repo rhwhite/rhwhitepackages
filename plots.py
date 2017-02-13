@@ -325,11 +325,13 @@ def plotmap(plotvars1,plotvars2,
         panelres.nglPanelTop                      = 0.95
         panelres.nglPanelBottom                      = 0.01
 
-    panelres.nglPanelFigureStrings = ['a','b','c','d','e','f','g','h']
+    panelres.nglPanelFigureStrings = (
+            ['a.','b.','c.','d.','e.','f.','g.','h.','i.','j.','k.','l.'])
     panelres.nglPanelFigureStringsJust = "TopLeft"
     panelres.nglPanelFigureStringsFontHeightF = 0.008
-    panelres.nglPanelFigureStringsParallelPosF = -0.55
-    panelres.nglPanelFigureStringsOrthogonalPosF = -0.6
+    panelres.nglPanelFigureStringsParallelPosF = -0.57
+    panelres.nglPanelFigureStringsOrthogonalPosF = -0.75
+    panelres.nglPanelFigureStringsPerimOn = False   # turn off boxes
     #panelres.amJust = "TopLeft"
 
     panelres.nglPaperOrientation = "Auto"
