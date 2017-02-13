@@ -20,7 +20,10 @@ import resource
 
 # simple function to 'regrid' data by summing conservatively over 
 # consecutive gridboxes
-def conserveRegrid(indata,latin,lonin,lats,lons,nsumlat,nsumlon):
+def conserveRegrid(indata,latin,lonin,nsumlat,nsumlon):
+    lats = indata[latin].values
+    lons = indata[lonin].values
+
     nlons = len(lons)
     nlats = len(lats)
 
@@ -33,7 +36,6 @@ def conserveRegrid(indata,latin,lonin,lats,lons,nsumlat,nsumlon):
     latsnew = np.zeros(nlatsnew,np.float)
     lonsnew = np.zeros(nlonsnew,np.float)
 
-    indatacoords = indata.coords
     indatadims = indata.dims
     newdimsize = []
     nnewdims = 0
@@ -81,14 +83,23 @@ def conserveRegrid(indata,latin,lonin,lats,lons,nsumlat,nsumlon):
         inlat += 1
 
     if nnewdims == 2:
-        newDA = xray.DataArray(new,coords=[('lat',latsnew),
-                                          ('lon',lonsnew)]
-                                  ,attrs=[indata.attrs])
+        try:
+            newDA = xray.DataArray(new,coords=[('lat',latsnew),
+                                               ('lon',lonsnew)],
+                                       attrs=[indata.attrs])
+        except ValueError:
+            newDA = xray.DataArray(new,coords=[('lat',latsnew),
+                                               ('lon',lonsnew)])
     elif nnewdims == 3:
-        newDA = xray.DataArray(new,coords=[(newdims[0],indata[newdims[0]]),
-                                          ('lat',latsnew),
-                                          ('lon',lonsnew)]
-                                  ,attrs=[indata.attrs])
+        try:
+            newDA = xray.DataArray(new,coords=[(newdims[0],indata[newdims[0]]),
+                                               ('lat',latsnew),
+                                               ('lon',lonsnew)],
+                                       attrs=[indata.attrs])
+        except ValueError:
+            newDA = xray.DataArray(new,coords=[(newdims[0],indata[newdims[0]]),
+                                               ('lat',latsnew),
+                                               ('lon',lonsnew)])
 
     return(newDA)
 

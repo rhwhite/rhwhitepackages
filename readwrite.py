@@ -21,14 +21,30 @@ def xrayOpen(filenamein,decodetimes=True):
                 exit("couldn't find file")
         return filein
 
-def shiftlons(invar,inlons):
-        nlons = inlons.shape[0]
+def shiftlons(invar,nlons):
         nlonhalf = nlons/2
 
         newinvar = np.zeros(invar.shape,np.float)
-        newinvar[:,0:nlonhalf] = invar[:,nlonhalf:nlons]
-        newinvar[:,nlonhalf:nlons] = invar[:,0:nlonhalf]
+        if len(invar.shape) == 1:
+            newinvar[0:nlonhalf] = invar[nlonhalf:nlons]
+            newinvar[nlonhalf:nlons] = invar[0:nlonhalf]
+        elif len(invar.shape) == 2:
+            newinvar[:,0:nlonhalf] = invar[:,nlonhalf:nlons]
+            newinvar[:,nlonhalf:nlons] = invar[:,0:nlonhalf]
+        else:
+            exit('not set up for arrays with dims > 2 yet')
+
         return newinvar
+
+def shiftlonlons(inlon,nlons):
+        nlonhalf = nlons/2
+
+        lonsnew = np.zeros(inlon.shape,np.float)
+        lonsnew[0:nlonhalf] = inlon[nlonhalf:nlons]
+        lonsnew[nlonhalf:nlons] = inlon[0:nlonhalf] + 360.0
+
+        return lonsnew
+
 
 def getunitsdesc(invarname):
         return{

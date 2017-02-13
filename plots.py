@@ -7,6 +7,7 @@ import datetime as dt
 import pandas
 import xray
 import Ngl
+from rhwhitepackages.readwrite import *
 
 def setplotrange(resMP,a,b,c):
         resMP.cnMinLevelValF = a
@@ -244,7 +245,6 @@ def plotmap(plotvars1,plotvars2,
             vartitle1,vartitle2,
             title,
             figtitle,
-            lons,lats,
             minlon,maxlon,minlat,maxlat,
             FillValue):
 
@@ -256,57 +256,69 @@ def plotmap(plotvars1,plotvars2,
 
     # if lons start negative, shift everything over so there isn't a line down
     # the middle of the Pacific
-    if lons[0] < 0:
-        nlonhalf = nlons/2
-        lonsnew = np.zeros(lons.shape,np.float)
-        lonsnew[0:nlonhalf] = lons[nlonhalf:nlons]
-        lonsnew[nlonhalf:nlons] = lons[0:nlonhalf] + 360.0
-        lons = lonsnew
+
+    lons1 = plotvars1.lon.values
+    lons2 = plotvars2.lon.values
+
+    lats1 = plotvars1.lat.values
+    lats2 = plotvars2.lat.values
+
+    if lons1[0] < 0:
+        #nlonhalf1 = len(lons1)/2
+        #lonsnew1 = np.zeros(lons1.shape,np.float)
+        #lonsnew1[0:nlonhalf1] = lons1[nlonhalf1:nlons1]
+        #lonsnew1[nlonhalf1:nlons1] = lons1[0:nlonhalf1] + 360.0
+
+        lonsnew1 = shiftlonlons(lons1,len(lons1))
+        lonsnew2 = shiftlonlons(lons2,len(lons2)) 
 
         for iplot in range(0,nplots):
-            plotvars1[iplot] = shiftlons(plotvars1[iplot],lons)
-            plotvars2[iplot] = shiftlons(plotvars2[iplot],lons)
+            plotvars1[iplot] = shiftlons(plotvars1[iplot],len(lons1))
+            plotvars2[iplot] = shiftlons(plotvars2[iplot],len(lons2))
     else:
-        lonsnew = lons
+        lonsnew1 = lons1
+        lonsnew2 = lons2
 
     # initialize plotting resources
-    res = Ngl.Resources()
-    res = initcontourplot(res,minlat,minlon,maxlat,maxlon,lats,lonsnew)
-    res.sfMissingValueV = FillValue
-
-    #    res.pmLabelBarDisplayMode = "Always"
-
-    #res.sfXCStartV = float(lonsnew[0])
-    #res.sfXCEndV = float(lonsnew[len(lons)-1])
-    #res.sfYCStartV = float(lats[0])
-    #res.sfYCEndV = float(lats[len(lats)-1])
-
-    res.lbOrientation   = "Vertical"
-
+    res1 = Ngl.Resources()
+    res1 = initcontourplot(res1,minlat,minlon,maxlat,maxlon,lats1,lonsnew1)
+    res1.sfMissingValueV = FillValue
+    res1.lbOrientation   = "Vertical"
     # including some font heights
-    res.lbLabelFontHeightF = 0.0125
-    res.lbTitleFontHeightF = 0.0125
-    res.tiMainFontHeightF = 0.015
+    res1.lbLabelFontHeightF = 0.0125
+    res1.lbTitleFontHeightF = 0.0125
+    res1.tiMainFontHeightF = 0.015
+
+    # initialize plotting resources
+    res2 = Ngl.Resources()
+    res2 = initcontourplot(res2,minlat,minlon,maxlat,maxlon,lats2,lonsnew2)
+    res2.sfMissingValueV = FillValue
+    res2.lbOrientation   = "Vertical"
+    # including some font heights
+    res2.lbLabelFontHeightF = 0.0125
+    res2.lbTitleFontHeightF = 0.0125
+    res2.tiMainFontHeightF = 0.015
 
     # initialize plotting array
     toplot = []
     # fill plotting array
     for iplot in range(0,nplots):
-        tempplot = plotvars1[iplot]
+        tempplot = plotvars1[iplot].values
         tempplot[np.where(np.isnan(tempplot))] = FillValue
-        res.cnMinLevelValF       = plotmin1[iplot]          # contour levels.
-        res.cnMaxLevelValF       = plotmax1[iplot]
-        res.cnLevelSpacingF      = ((plotmax1[iplot]-plotmin1[iplot])/10.0)
-        res.tiMainString = (vartitle1[iplot])
-        toplot.append(Ngl.contour_map(wks,tempplot,res))
+        # update plot resources with correct lat/lon
+        res1.cnMinLevelValF       = plotmin1[iplot]
+        res1.cnMaxLevelValF       = plotmax1[iplot]
+        res1.cnLevelSpacingF      = ((plotmax1[iplot]-plotmin1[iplot])/10.0)
+        res1.tiMainString = (vartitle1[iplot])
+        toplot.append(Ngl.contour_map(wks,tempplot,res1))
 
-        tempplot = plotvars2[iplot]
+        tempplot = plotvars2[iplot].values
         tempplot[np.where(np.isnan(tempplot))] = FillValue
-        res.cnMinLevelValF       = plotmin2[iplot]          # contour levels.
-        res.cnMaxLevelValF       = plotmax2[iplot]
-        res.cnLevelSpacingF      = ((plotmax2[iplot]-plotmin2[iplot])/10.0)
-        res.tiMainString = vartitle2[iplot]
-        toplot.append(Ngl.contour_map(wks,tempplot,res))
+        res2.cnMinLevelValF       = plotmin2[iplot]          # contour levels.
+        res2.cnMaxLevelValF       = plotmax2[iplot]
+        res2.cnLevelSpacingF      = ((plotmax2[iplot]-plotmin2[iplot])/10.0)
+        res2.tiMainString = vartitle2[iplot]
+        toplot.append(Ngl.contour_map(wks,tempplot,res2))
 
     textres = Ngl.Resources()
     textres.txFontHeightF = 0.015
