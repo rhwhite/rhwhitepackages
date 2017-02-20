@@ -21,6 +21,20 @@ def xrayOpen(filenamein,decodetimes=True):
                 exit("couldn't find file")
         return filein
 
+def xrayMfOpen(filenamein,decodetimes=True):
+        try:
+                if decodetimes:
+                        filein= xray.open_mfdataset(filenamein)
+                else:
+                        filein=xray.open_mfdataset(filenamein,decode_times=False)
+    except MemoryError:
+        exit("need more memory to read in file " + str(filenamein))
+        except RuntimeError:
+                print filenamein
+                exit("couldn't find file")
+        return filein
+
+
 def shiftlons(invar,nlons):
         nlonhalf = nlons/2
 
