@@ -299,6 +299,9 @@ def plotmap(plotvars1,plotvars2,
     res2.lbTitleFontHeightF = 0.0125
     res2.tiMainFontHeightF = 0.015
 
+    # turn off grid lines
+    res1.mpGridAndLimbOn = False
+    res2.mpGridAndLimbOn = False
     # initialize plotting array
     toplot = []
     # fill plotting array
@@ -338,7 +341,7 @@ def plotmap(plotvars1,plotvars2,
         panelres.nglPanelBottom                      = 0.01
 
     panelres.nglPanelFigureStrings = (
-            ['a.','b.','c.','d.','e.','f.','g.','h.','i.','j.','k.','l.'])
+            ['a.','b.','c.','d.','e.','f.','g.','h.','i.','j.','k.','l.','m.','n.','o.','p.'])
     panelres.nglPanelFigureStringsJust = "TopLeft"
     panelres.nglPanelFigureStringsFontHeightF = 0.008
     panelres.nglPanelFigureStringsParallelPosF = -0.57
@@ -398,12 +401,14 @@ def getFITcolorbars(Datain,minGBin,splittypein,varin):
             elif varin in ['TPrecip']:
                 cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0],[100,90.0,40.0,40.0,40.0]  
 
-    elif splittype == 'maxspeed':
+    elif splittypein == 'maxspeed':
         if Datain == "TRMM":
             if varin in ['TDensity']:
-                cbmin,cbmax = [0.0,0.0,0.0,95.0,0.0,0.0,0.0],[0.5,0.75,5.0,100.0,5.0,0.75,0.5]
+                cbmin,cbmax = ([0.0,0,0,0,95,0,0,0,0],
+                               [300,0.5,0.75,5.0,100.0,5.0,0.75,0.5,0.5])
             elif varin in ['TPrecip']:
-                cbmin,cbmax = [0.0,0.0,0.0,20.0,0.0,0.0,0.0],[30,30.0,30.0,100.0,30.0,30.0,30.0]
+                cbmin,cbmax = ([0,0,0,0,20,0,0,0,0],
+                              [100,30,30,30,100,30,30,30,30])
 
         elif Datain in ["TRMMERAIgd"]:
             if varin in ['TDensity']:
