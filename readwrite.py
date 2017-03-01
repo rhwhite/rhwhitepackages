@@ -112,9 +112,9 @@ def getdenfilename(mappingi, datai, versioni, fstartyri, fendyri, iboundi, split
         addsumlats = ''
 
     # get directory
-    if splittype == 'day':
+    if splittypei == 'day':
         diradd = '/Sizes/'
-    elif splittype == 'MaxSpeeds':
+    elif splittypei == 'MaxSpeeds':
         diradd = '/MaxSpeeds/'
 
     dirIn = ('/home/disk/eos4/rachel/EventTracking/FiT_RW_ERA/' + datai + '_output/'
