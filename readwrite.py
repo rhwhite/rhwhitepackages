@@ -9,30 +9,30 @@ import xray
 import sys
 
 def xrayOpen(filenamein,decodetimes=True):
-        try:
-                if decodetimes:
-                        filein= xray.open_dataset(filenamein)
-                else:
-                        filein=xray.open_dataset(filenamein,decode_times=False)
-	except MemoryError:
-		exit("need more memory to read in file " + str(filenamein))
-        except RuntimeError:
-                print filenamein
-                exit("couldn't find file")
-        return filein
-
-def xrayMfOpen(filenamein,decodetimes=True):
-        try:
-                if decodetimes:
-                        filein= xray.open_mfdataset(filenamein)
-                else:
-                        filein=xray.open_mfdataset(filenamein,decode_times=False)
+    try:
+        if decodetimes:
+            filein= xray.open_dataset(filenamein)
+        else:
+            filein=xray.open_dataset(filenamein,decode_times=False)
     except MemoryError:
         exit("need more memory to read in file " + str(filenamein))
-        except RuntimeError:
-                print filenamein
-                exit("couldn't find file")
-        return filein
+    except RuntimeError:
+        print filenamein
+        exit("couldn't find file")
+    return filein
+
+def xrayMfOpen(filenamein,decodetimes=True):
+    try:
+        if decodetimes:
+            filein= xray.open_mfdataset(filenamein)
+        else:
+            filein=xray.open_mfdataset(filenamein,decode_times=False)
+    except MemoryError:
+        exit("need more memory to read in file " + str(filenamein))
+    except RuntimeError:
+        print filenamein
+        exit("couldn't find file")
+    return filein
 
 
 def shiftlons(invar,nlons):
@@ -111,7 +111,17 @@ def getdenfilename(mappingi, datai, versioni, fstartyri, fendyri, iboundi, split
     else:
         addsumlats = ''
 
-    fileName = ('DenDirSpd_Map_' + monanni + '_' + fileTypeadd + tboundtitle + '_' + mappingi + '_' 
+    # get directory
+    if splittype == 'day':
+        diradd = '/Sizes/'
+    elif splittype == 'MaxSpeeds':
+        diradd = '/MaxSpeeds/'
+
+    dirIn = ('/home/disk/eos4/rachel/EventTracking/FiT_RW_ERA/' + datai + '_output/'
+               + versioni + str(fstartyri) + '/proc/' + diradd)
+
+    # concat directory and filename
+    fileName = (dirIn + 'DenDirSpd_Map_' + monanni + '_' + fileTypeadd + tboundtitle + '_' + mappingi + '_' 
                     + datai + "_" + str(fstartyri) + '-' + str(fendyri) + '_' + versioni 
                     + fileadd + addsumlats + '.nc')
     return(fileName)
