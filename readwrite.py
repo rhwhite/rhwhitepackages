@@ -1,11 +1,9 @@
 # Module to read and write using xray with useful error messages
 # Written by rhwhite rachel.white@cantab.net
-from netCDF4 import Dataset
-import netCDF4
 import numpy as np
 import datetime as dt
 import pandas
-import xray
+import xarray as xray
 import sys
 
 def xrayOpen(filenamein,decodetimes=True):
@@ -16,19 +14,19 @@ def xrayOpen(filenamein,decodetimes=True):
             filein=xray.open_dataset(filenamein,decode_times=False)
     except MemoryError:
         exit("need more memory to read in file " + str(filenamein))
-    except RuntimeError:
+    except (IOError, RuntimeError):
         print filenamein
         exit("couldn't find file")
     return filein
 
-def xrayMfOpen(filenamein,decodetimes=True):
+def xrayMfOpen(filenamein,decodetimes=True,concat_dim='__infer_concat_dim__',autoclose=True):
     try:
-        if decodetimes:
-            filein= xray.open_mfdataset(filenamein)
-        else:
-            filein=xray.open_mfdataset(filenamein,decode_times=False)
+        filein=xray.open_mfdataset(filenamein,
+                                   decode_times=decodetimes,
+                                   concat_dim = concat_dim,
+                                   autoclose = autoclose)
     except MemoryError:
-        exit("need more memory to read in file " + str(filenamein))
+        exit("need more memory to read in files " + str(filenamein))
     except RuntimeError:
         print filenamein
         exit("couldn't find file")
@@ -77,6 +75,8 @@ def getunitsdesc(invarname):
                 'ycenterend': ['index','y index of center of event at event send'],
                 'xcentermean': ['index','x index of center of event at event mean time'],
                 'ycentermean': ['index','y index of center of event at event mean time'],
+                'latcentermean': ['degrees N','latitude center of event at event mean time'],
+                'loncentermean': ['degrees E','longitude of center of event at event mean time'],
                 'xmin': ['index','minimum x index over lifetime'],
                 'xmax': ['index','maximum x index over lifetime'],
                 'ymin': ['index','minimum y index over lifetime'],
@@ -249,3 +249,43 @@ def getdirectory(splittype):
         exit("unexpected splittype")
 
     return diradd  
+
+
+def geteventmapdata(idayin,timeres,var,filenamein,
+                startyr,endyr,
+                MinLatF,MaxLatF,MinLonF,MaxLonF,
+                sumdims):
+    # sanity checks
+    if timeres not in ['Ann','Mon']:
+        exit('sorry, don\'t understand time resolution ' + str(timeres))
+
+    file1 = xrayOpen(filenamein)
+    lats = file1['lat']
+    lons = file1['lon']
+    years = file1['time'].sel(time = slice(str(startyr),str(endyr)))
+
+
+    # Sum over plotted region by year
+    if lats[-1] < lats[0]:
+        print("latitudes are north to south!")
+        data1 = (file1[var].sel(
+                                   lat = slice(MaxLatF,MinLatF),
+                                   lon = slice(MinLonF,MaxLonF)))
+                                   #.sum(dim=['lat','lon']))
+    else:
+
+        data1 = (file1[var].sel(
+                                   lat = slice(MinLatF,MaxLatF),
+                                   lon = slice(MinLonF,MaxLonF)))
+                                   #.sum(dim=['lat','lon']))
+
+    if sumdims != []:
+        data1 = data1.sum(dim=sumdims)
+
+    if timeres == 'Ann':
+        data1 = data1.groupby('time.year').sum(dim='time')
+
+    return data1
+
+
+
