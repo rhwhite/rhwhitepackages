@@ -2,7 +2,7 @@
 # Written by rhwhite rachel.white@cantab.net
 import numpy as np
 import datetime as dt
-import pandas
+#import pandas
 import xarray as xray
 import sys
 
@@ -13,10 +13,10 @@ def xrayOpen(filenamein,decodetimes=True):
         else:
             filein=xray.open_dataset(filenamein,decode_times=False)
     except MemoryError:
-        exit("need more memory to read in file " + str(filenamein))
+        sys.exit("need more memory to read in file " + str(filenamein))
     except (IOError, RuntimeError):
         print filenamein
-        exit("couldn't find file")
+        sys.exit("couldn't find file")
     return filein
 
 def xrayMfOpen(filenamein,decodetimes=True,concat_dim='__infer_concat_dim__',autoclose=True):
@@ -26,40 +26,35 @@ def xrayMfOpen(filenamein,decodetimes=True,concat_dim='__infer_concat_dim__',aut
                                    concat_dim = concat_dim,
                                    autoclose = autoclose)
     except MemoryError:
-        exit("need more memory to read in files " + str(filenamein))
+        sys.exit("need more memory to read in files " + str(filenamein))
     except RuntimeError:
         print filenamein
-        exit("couldn't find file")
+        sys.exit("couldn't find file")
     return filein
 
 
 def shiftlons(invar,nlons):
-        nlonhalf = nlons/2
+    nlonhalf = nlons/2
 
-        newinvar = np.zeros(invar.shape,np.float)
-        if len(invar.shape) == 1:
-            newinvar[0:nlonhalf] = invar[nlonhalf:nlons]
-            newinvar[nlonhalf:nlons] = invar[0:nlonhalf]
-        elif len(invar.shape) == 2:
-            newinvar[:,0:nlonhalf] = invar[:,nlonhalf:nlons]
-            newinvar[:,nlonhalf:nlons] = invar[:,0:nlonhalf]
-        else:
-            exit('not set up for arrays with dims > 2 yet')
+    newinvar = np.zeros(invar.shape,np.float)
+    newinvar[...,0:nlonhalf] = invar[...,nlonhalf:nlons]
+    newinvar[...,nlonhalf:nlons] = invar[...,0:nlonhalf]
 
-        return newinvar
+    return newinvar
 
 def shiftlonlons(inlon,nlons):
-        nlonhalf = nlons/2
+    nlonhalf = nlons/2
 
-        lonsnew = np.zeros(inlon.shape,np.float)
-        lonsnew[0:nlonhalf] = inlon[nlonhalf:nlons]
-        lonsnew[nlonhalf:nlons] = inlon[0:nlonhalf] + 360.0
+    lonsnew = np.zeros(inlon.shape,np.float)
+    lonsnew[0:nlonhalf] = inlon[nlonhalf:nlons] - 360.0
+    lonsnew[nlonhalf:nlons] = inlon[0:nlonhalf]
 
-        return lonsnew
+    return lonsnew
 
 
 def getunitsdesc(invarname):
         return{
+                'avg_intensity': ['mm/hr','average rain rate over the whole event'],
                 'gridboxspanSA': ['m2','spatial footprint of event during lifetime multiplied by gridbox surface area'],
                 'totalprecipSA': ['m3','total precip of event during lifetime multipled by gridbox surface area'],
                 'uniquegridboxspanSA': ['m2','unique gridbox spatial footprint of event during lifetime multipled by gridbox surface area'],
@@ -94,7 +89,7 @@ def getdenfilename(mappingi, datai, versioni, fstartyri, fendyri, iboundi, split
     elif splittypei == "day":
         fileTypeadd = "Sizes_"
     else:
-        exit("unexpected splittype")
+        sys.exit("unexpected splittype")
 
     if minGBi > 0:
         fileadd = '_min' + str(minGBi) + 'GB'
@@ -134,7 +129,7 @@ def getPrecipfilename(mappingi, datai, versioni, fstartyri, fendyri, iboundi, sp
     elif splittypei == "day":
         fileTypeadd = "Sizes_"
     else:
-        exit("unexpected splittype")
+        sys.exit("unexpected splittype")
 
     if tbound1i[iboundi] < 0:
         tboundtitle = str(tbound1i[iboundi]) + '-' + str(tbound2i[iboundi])
@@ -189,7 +184,7 @@ def getrawPrecipAnn(Data,Version,minlat,maxlat,anstartyr,anendyr):
         PrecipClimFile = 'ncra_f.e13.FAMIPC5.ne120_ne120_TotalPrecip_1979-2012.nc'
 
     else:
-        exit('not set up for Data type ' + Data + ' version ' + Version)
+        sys.exit('not set up for Data type ' + Data + ' version ' + Version)
 
     # open up precip file
     FileInPrecip = xrayOpen(PrecipClimDir + PrecipClimFile)
@@ -246,7 +241,7 @@ def getdirectory(splittype):
     elif splittype == "day":
         diradd = "Sizes"
     else:
-        exit("unexpected splittype")
+        sys.exit("unexpected splittype")
 
     return diradd  
 
@@ -257,7 +252,7 @@ def geteventmapdata(idayin,timeres,var,filenamein,
                 sumdims):
     # sanity checks
     if timeres not in ['Ann','Mon']:
-        exit('sorry, don\'t understand time resolution ' + str(timeres))
+        sys.exit('sorry, don\'t understand time resolution ' + str(timeres))
 
     file1 = xrayOpen(filenamein)
     lats = file1['lat']

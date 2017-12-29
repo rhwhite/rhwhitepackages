@@ -48,7 +48,11 @@ def initcontourplot(resMP,plotstartlat,plotstartlon,plotendlat,plotendlon,lats,l
         resMP.mpMaxLonF = plotendlon
         resMP.mpMinLatF = plotstartlat
         resMP.mpMaxLatF = plotendlat
-        resMP.mpOutlineBoundarySets = "AllBoundaries"
+        resMP.mpOutlineBoundarySets = "National"
+
+        # don't have label bar take up so much space
+        resMP.pmLabelBarWidthF = 0.05
+
 
         resMP.sfYArray = lats
         resMP.sfXArray = lons
@@ -246,11 +250,13 @@ def plotmap(plotvars1,plotvars2,
             title,
             figtitle,
             minlon,maxlon,minlat,maxlat,
-            FillValue):
+            FillValue,panellabels = [],
+            labelbarlabels = [],
+            labelbarlabels2 = []):
 
     nplots = plotvars1.shape[0]
     wkres = Ngl.Resources()
-    wkres.wkColorMap = "precip_diff_12lev"
+    wkres.wkColorMap = "WhiteBlue"
     wks_type = "eps"
     wks = Ngl.open_wks(wks_type,figtitle,wkres)
 
@@ -285,9 +291,11 @@ def plotmap(plotvars1,plotvars2,
     res1.sfMissingValueV = FillValue
     res1.lbOrientation   = "Vertical"
     # including some font heights
-    res1.lbLabelFontHeightF = 0.0125
-    res1.lbTitleFontHeightF = 0.0125
+    res1.lbLabelFontHeightF = 0.01
+    res1.lbTitleFontHeightF = 0.01
     res1.tiMainFontHeightF = 0.015
+    res1.lbTitlePosition = 'Bottom'
+    res1.lbBottomMarginF = 0.0
 
     # initialize plotting resources
     res2 = Ngl.Resources()
@@ -295,9 +303,12 @@ def plotmap(plotvars1,plotvars2,
     res2.sfMissingValueV = FillValue
     res2.lbOrientation   = "Vertical"
     # including some font heights
-    res2.lbLabelFontHeightF = 0.0125
-    res2.lbTitleFontHeightF = 0.0125
-    res2.tiMainFontHeightF = 0.015
+    res2.lbLabelFontHeightF = 0.01
+    res2.lbTitleFontHeightF = 0.01
+    res2.tiMainFontHeightF = 0.008
+    res2.lbTitlePosition = 'Bottom'
+    res2.lbBottomMarginF = 0.0
+
 
     # turn off grid lines
     res1.mpGridAndLimbOn = False
@@ -313,6 +324,12 @@ def plotmap(plotvars1,plotvars2,
         res1.cnMaxLevelValF       = plotmax1[iplot]
         res1.cnLevelSpacingF      = ((plotmax1[iplot]-plotmin1[iplot])/10.0)
         res1.tiMainString = (vartitle1[iplot])
+
+        if panellabels != []:
+            res1.lbTitleString = labelbarlabels[iplot]
+            res1.tiYAxisString  = panellabels[iplot]  # Y axes label.
+
+
         toplot.append(Ngl.contour_map(wks,tempplot,res1))
 
         tempplot = plotvars2[iplot].values
@@ -321,6 +338,10 @@ def plotmap(plotvars1,plotvars2,
         res2.cnMaxLevelValF       = plotmax2[iplot]
         res2.cnLevelSpacingF      = ((plotmax2[iplot]-plotmin2[iplot])/10.0)
         res2.tiMainString = vartitle2[iplot]
+        if panellabels != []:
+            res2.lbTitleString = labelbarlabels2[iplot]
+            res2.tiYAxisString  = " "  # so plots are the same
+                                                      # size
         toplot.append(Ngl.contour_map(wks,tempplot,res2))
 
     textres = Ngl.Resources()
@@ -329,8 +350,8 @@ def plotmap(plotvars1,plotvars2,
 
     panelres = Ngl.Resources()
     panelres.nglPanelLabelBar = True
-    #panelres.nglPanelYWhiteSpacePercent = 5.
-    #panelres.nglPanelXWhiteSpacePercent = 5.
+    panelres.nglPanelYWhiteSpacePercent = 0.
+    panelres.nglPanelXWhiteSpacePercent = 0.
 
     panelres.nglPanelLabelBar   = False     # Turn on panel labelbar
     if nplots > 5:
@@ -340,12 +361,15 @@ def plotmap(plotvars1,plotvars2,
         panelres.nglPanelTop                      = 0.95
         panelres.nglPanelBottom                      = 0.01
 
+    panelres.nglPanelLeft = 0.01
+    panelres.nglPanelRight = 0.99
+
     panelres.nglPanelFigureStrings = (
             ['a.','b.','c.','d.','e.','f.','g.','h.','i.','j.','k.','l.','m.','n.','o.','p.'])
     panelres.nglPanelFigureStringsJust = "TopLeft"
     panelres.nglPanelFigureStringsFontHeightF = 0.008
-    panelres.nglPanelFigureStringsParallelPosF = -0.57
-    panelres.nglPanelFigureStringsOrthogonalPosF = -0.75
+    panelres.nglPanelFigureStringsParallelPosF = -0.55
+    panelres.nglPanelFigureStringsOrthogonalPosF = -0.7
     panelres.nglPanelFigureStringsPerimOn = False   # turn off boxes
     #panelres.amJust = "TopLeft"
 
@@ -361,7 +385,11 @@ def getFITcolorbars(Datain,minGBin,splittypein,varin):
             if varin in ['TDensity']:
                 cbmin,cbmax = [0.0,98.0,0.0,0.0,0.0,0.0],[300,100.0,1.0,0.2,0.05,1.0]
             elif varin in ['TPrecip']:
-                cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,90.0,40.0,40.0,40.0,40.0]
+                cbmin,cbmax = (
+                        [40.0,50.0,0.0,0.0,0.0,0.0],[100,100.0,40.0,40.0,40.0,10.0])
+            elif varin in ['LocalDensity']:
+                cbmin,cbmax =(
+                        [0.0,50.0,0.0,0.0,0.0,0.0],[200,100,30,20.0,10.0,10.0])
 
         elif Datain in ["TRMMERAIgd"]:
             if minGBin in [4,9]:
@@ -435,8 +463,8 @@ def getFITcolorbars(Datain,minGBin,splittypein,varin):
                 cbmin,cbmax = [0.0,0.0,0.0,0.0,0.0,0.0],[100,70.0,30.0,50.0,50.0,50.0]
 
     if (cbmin,cbmax) == (-1,-1):
-        print(Datain,varin,splittype,minGBin)
-        exit('the combination of input parameters is not yet assigned a ' +
+        print(Datain,varin,splittypein,minGBin)
+        sys.exit('the combination of input parameters is not yet assigned a ' +
               'colorbar. Please go to rhwhitepackages/plots and add the ' +
               'colorbar values that you want')
 

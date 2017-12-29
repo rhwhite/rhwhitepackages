@@ -43,6 +43,9 @@ def findyearSSWs(U,times,count,thresh,lastdate,startdate,toprint,SSWdates):
     finalwarmingstart = -1
     yearcount = 0
     itime = 0
+    # if U starts below 0, iterate until it isn't!
+    while U[itime]<0:
+        itime +=1
     while itime < len(U.time):
         if U[itime] < 0:
             central,end,itime = findend(U,itime,thresh)
@@ -162,7 +165,7 @@ def findSSWs(U,thresh,Obs=False,startyr = 0):
         final.append(finalW)
 
     if singleyear + 2 * doubleyear != count:
-        exit("problem with counting, maybe a year with more than 2 SSWs?!")
+        sys.exit("problem with counting, maybe a year with more than 2 SSWs?!")
 
     mean,SE = meanSE(nyears,nyears - singleyear - doubleyear,singleyear,doubleyear)
     print ('mean: ' + str(mean) + ' ; s.e.: ' + str(SE) )
