@@ -20,6 +20,7 @@ boltz       = SHR_CONST_BOLTZ      #! Boltzman's constant (J/K/molecule)
 cday        = SHR_CONST_CDAY       #! sec in calendar day ~ sec
 cpair       = SHR_CONST_CPDAIR     #! specific heat of dry air (J/K/kg)
 cpliq       = SHR_CONST_CPFW       #! specific heat of fresh h2o (J/K/kg)
+cpocean     = SHR_CONST_CPSW       #! specific heat of ocean h2o (J/K/kg)
 karman      = SHR_CONST_KARMAN     #! Von Karman constant
 latice      = SHR_CONST_LATICE     #  ! Latent heat of fusion (J/kg)
 latvap      = SHR_CONST_LATVAP     #  ! Latent heat of vaporization (J/kg)

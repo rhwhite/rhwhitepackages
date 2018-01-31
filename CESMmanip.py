@@ -12,6 +12,7 @@ import datetime as dt
 import pandas as pd
 import xray as xr
 import calendar
+from rhwhitepackages.CESMconst import *
 
 calendar.monthrange(2001,1)[1]
 monthstart = [0]
@@ -57,6 +58,39 @@ def lat_mean(invar):
     varmean = varnew.mean(dim='lat')/coslat.mean(dim='lat')
     return varmean
 
+def getlatdist(inlat1,inlat2):
+    circum = 2 * pi * rearth
+    inlat1rad = np.deg2rad(inlat1)
+    inlat2rad = np.deg2rad(inlat2)
+    dist = circum * (inlat1rad - inlat2rad)/(2 * pi)
+    return(abs(dist))
+
+def get_latname(invar):
+    if lat in nvar.dims:
+       latvar = 'lat' 
+    elif latitude in invar.dims:
+       latvar = 'latitude'
+    elif 'Latitude' in nvar.dims:
+       latvar = 'Latitude'
+    else:
+        sys.exit('cannot determine latitude dimension name')
+    return(latvar)
+
+def ddy(invar):
+    nlats = len(invar['lat'])
+    ddy = invar.copy(deep=True)
+    ddy.isel(lat=0)[...] = 0
+
+    for ilat in range(1,nlats-1):
+        dy = get_latdist(invar['lat'].isel(lat = ilat+1),
+                            invar['lat'].isel(lat = ilat-1))
+        dTH = invar.isel(lat = ilat+1) - invar.isel(lat = ilat-1)
+        ddy.isel(lat = ilat)[...] = dTH/dy
+
+    ddy.isel(lat=nlats-1)[...] = 0
+
+    return(ddy)
+
 def selectmonths(infile,months):
 
     calendar.monthrange(2001,1)[1]
@@ -69,24 +103,31 @@ def selectmonths(infile,months):
     if months == 'DJF':
         indices = np.squeeze(np.argwhere((infile.time.values % 365 <= 59) |
             (infile.time.values % 365 > 334)))
-        monthtitle = 'DJF'
+        #monthtitle = 'DJF'
+
+    elif months == 'JJA':
+        indices = np.squeeze(np.argwhere((infile.time.values % 365 > 151) &
+            (infile.time.values % 365 <= 243)))
+        #monthtitle = 'JJA'
 
     elif months == 'NDJFM':
         indices = np.squeeze(np.argwhere((infile.time.values % 365 <= 90) |
             (infile.time.values % 365 > 304)))
-        monthtitle = 'NDJFM'
+        #monthtitle = 'NDJFM'
 
     elif months =='MJJAS':
         indices = np.squeeze(np.argwhere((infile.time.values % 365 > 120) &
             (infile.time.values % 365 <= 273)))
-        monthtitle = 'MJJAS'
+        #monthtitle = 'MJJAS'
 
     elif months in range(1,13):
         indices = np.squeeze(np.argwhere((infile.time.values % 365 >=
             monthstart[months-1]) & (infile.time.values % 365 < monthstart[months])))
-        monthtitle = calendar.month_abbr[months]
-
-    return infile.isel(time=indices),monthtitle
+        #monthtitle = calendar.month_abbr[months]
+    else:
+        print('month ' + months + 'is not recognized, please try again')
+        return ()
+    return infile.isel(time=indices)
 
 def concatmonths(infile,month):
     # check data is in days since Jan 01
