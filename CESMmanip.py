@@ -58,12 +58,29 @@ def lat_mean(invar):
     varmean = varnew.mean(dim='lat')/coslat.mean(dim='lat')
     return varmean
 
+def lat_sum(invar):
+    latrad = np.deg2rad(invar.lat)
+    coslat = np.cos(latrad)
+    varnew = invar * coslat
+    varsum = varnew.mean(dim='lat')/coslat.sum(dim='lat')
+    return varsum
+
 def getlatdist(inlat1,inlat2):
     circum = 2 * pi * rearth
     inlat1rad = np.deg2rad(inlat1)
     inlat2rad = np.deg2rad(inlat2)
     dist = circum * (inlat1rad - inlat2rad)/(2 * pi)
     return(abs(dist))
+
+def getlondist(inlon1,inlon2,inlat):
+    inlatrad = np.deg2rad(inlat)
+    inlon1rad = np.deg2rad(inlon1)
+    inlon2rad = np.deg2rad(inlon2)
+    circum = 2 * pi * rearth * np.cos(inlatrad)
+    dist = circum * (inlon1rad - inlon2rad)/(2 * pi)
+    return(abs(dist))
+
+
 
 def get_latname(invar):
     if lat in nvar.dims:
@@ -76,10 +93,75 @@ def get_latname(invar):
         sys.exit('cannot determine latitude dimension name')
     return(latvar)
 
+def get_circum_area(latstart,latend):
+    circumlat = 2.0 * np.pi * rearth * np.cos(np.deg2rad(latstart))
+    return(circumlat)
+
 def ddy(invar):
+    # based on https://www.ncl.ucar.edu/Document/Functions/Built-in/uv2dv_cfd.shtml
+    # H.B. Bluestein [Synoptic-Dynamic Meteorology in Midlatitudes, 1992, Oxford Univ. Press p113-114]
     nlats = len(invar['lat'])
     ddy = invar.copy(deep=True)
     ddy.isel(lat=0)[...] = 0
+
+    for ilat in range(1,nlats-1):
+
+        dy = getlatdist(invar['lat'].isel(lat = ilat+1),
+                            invar['lat'].isel(lat = ilat-1))
+        dvar = invar.isel(lat = ilat+1) - invar.isel(lat = ilat-1)
+        ddy.isel(lat = ilat)[...] = dvar/dy - (invar.isel(lat=ilat)/rearth) * np.tan(np.deg2rad(invar.lat.isel(lat=ilat)))
+
+    ddy.isel(lat=nlats-1)[...] = 0
+
+    return(ddy)
+
+
+def ddx(invar):
+    # based on https://www.ncl.ucar.edu/Document/Functions/Built-in/uv2dv_cfd.shtml
+    # H.B. Bluestein [Synoptic-Dynamic Meteorology in Midlatitudes, 1992, Oxford Univ. Press p113-114]
+    nlons = len(invar['lon'])
+    nlats = len(invar['lat'])
+    ddx = invar.copy(deep=True)
+    #ddx.isel(lat=0)[...] = 0
+
+    for ilat in range(1,nlats-1):
+        for ilon in range(1,nlons-1):
+            
+            dx = getlondist(invar['lon'].isel(lon = ilon+1),
+                            invar['lon'].isel(lon = ilon-1),
+                            invar['lat'].isel(lat=ilat))
+            dvar = invar.isel(lon = ilon+1).isel(lat=ilat) - invar.isel(lon = ilon-1).isel(lat=ilat)
+            ddx.isel(lat = ilat)[...] = dvar/dx
+
+        # Now cover ilon = 0 and ilon = nlons-1
+        ilon = 0
+        dx = getlondist(invar['lon'].isel(lon = ilon+1),
+                            invar['lon'].isel(lon = nlons-1),
+                            invar['lat'].isel(lat=ilat))
+        dvar = invar.isel(lon = ilon+1).isel(lat=ilat) - invar.isel(lon = nlons-1).isel(lat=ilat)
+        ddx.isel(lat = ilat)[...] = dvar/dx
+
+        ilon= nlons-1
+        dx = getlondist(invar['lon'].isel(lon = 0),
+                            invar['lon'].isel(lon = ilon),
+                            invar['lat'].isel(lat=ilat))
+        dvar = invar.isel(lon = 0).isel(lat=ilat) - invar.isel(lon = ilon-1).isel(lat=ilat)
+        ddx.isel(lat = ilat)[...] = dvar/dx
+
+    return(ddx)
+
+
+
+def ddphi(invar):
+    dims = invar.dims
+    latidx = dims.index('lat')
+    ddphi = invar.copy(deep=True)
+    ddphi.isel(lat=0)[...] = 0
+
+    dvar = np.gradient(invar,axis=latidx)
+    dlat = np.gradient(invar.lat)
+
+    dvardphi = dvar/dlat - (invar/rearth) * np.tan(np.deg2rad(invar.lat))
 
     for ilat in range(1,nlats-1):
         dy = get_latdist(invar['lat'].isel(lat = ilat+1),
@@ -91,6 +173,27 @@ def ddy(invar):
 
     return(ddy)
 
+def div(invar):
+    dvardphi = ddphi(invar)
+    dvardlon = np.gradient
+
+def seasmean(infile,seas):
+    calendar.monthrange(2001,1)[1]
+    monthstart = [0]
+    for imonth in range(1,13):
+        ndays = calendar.monthrange(2001,imonth)[1]
+        monthstart.append(monthstart[imonth-1]+ndays)
+
+    if months == 'DJF':
+        indices = np.squeeze(np.argwhere((infile.time.values % 365 <= 59) |
+            (infile.time.values % 365 > 334)))
+        #monthtitle = 'DJF'
+    monthselect = infile.isel(time=indices)
+
+    # find first month
+    months = (monthselect.time.values % 365)
+    
+
 def selectmonths(infile,months):
 
     calendar.monthrange(2001,1)[1]
@@ -99,16 +202,22 @@ def selectmonths(infile,months):
         ndays = calendar.monthrange(2001,imonth)[1]
         monthstart.append(monthstart[imonth-1]+ndays)
 
-
     if months == 'DJF':
         indices = np.squeeze(np.argwhere((infile.time.values % 365 <= 59) |
-            (infile.time.values % 365 > 334)))
-        #monthtitle = 'DJF'
+            (infile.time.values % 365 >= 335)))
+
+    elif months == 'MAM':
+        indices = np.squeeze(np.argwhere((infile.time.values % 365 > 59) &
+            (infile.time.values % 365 <= 151)))
 
     elif months == 'JJA':
         indices = np.squeeze(np.argwhere((infile.time.values % 365 > 151) &
             (infile.time.values % 365 <= 243)))
-        #monthtitle = 'JJA'
+
+    elif months == 'SON':
+        indices = np.squeeze(np.argwhere((infile.time.values % 365 > 243) &
+            (infile.time.values % 365 <= 334)))
+
 
     elif months == 'NDJFM':
         indices = np.squeeze(np.argwhere((infile.time.values % 365 <= 90) |
@@ -128,6 +237,12 @@ def selectmonths(infile,months):
         print('month ' + months + 'is not recognized, please try again')
         return ()
     return infile.isel(time=indices)
+
+def get_all_seasons(infile):
+    outfile = {}
+    for iseas in ['DJF','MAM','JJA','SON']:
+        outfile[iseas] = selectmonths(infile,iseas)
+    return outfile
 
 def concatmonths(infile,month):
     # check data is in days since Jan 01

@@ -39,3 +39,4 @@ def getOHC(indata,heights,depth):
     return(totalHC)
 
 
+def vertInt(indata)
