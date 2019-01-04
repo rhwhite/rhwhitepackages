@@ -80,8 +80,6 @@ def getlondist(inlon1,inlon2,inlat):
     dist = circum * (inlon1rad - inlon2rad)/(2 * pi)
     return(abs(dist))
 
-
-
 def get_latname(invar):
     if lat in nvar.dims:
        latvar = 'lat' 
@@ -97,22 +95,50 @@ def get_circum_area(latstart,latend):
     circumlat = 2.0 * np.pi * rearth * np.cos(np.deg2rad(latstart))
     return(circumlat)
 
+def get_area(latstart,latend,lonstart,lonend):
+    dlon = lonend - lonstart
+    dlonrad = dlon * (2.0 * np.pi)/360.0
+    latstartrad = latstart * (2.0 * pi)/360.0
+    latendrad = latend * (2.0 * pi)/360.0
+    area = rearth**2 * abs(np.sin(latstartrad) - np.sin(latendrad)) * dlonrad
+    return(area)
+
 def ddy(invar):
     # based on https://www.ncl.ucar.edu/Document/Functions/Built-in/uv2dv_cfd.shtml
     # H.B. Bluestein [Synoptic-Dynamic Meteorology in Midlatitudes, 1992, Oxford Univ. Press p113-114]
-    nlats = len(invar['lat'])
-    ddy = invar.copy(deep=True)
-    ddy.isel(lat=0)[...] = 0
 
-    for ilat in range(1,nlats-1):
+    # Using this rather ugly approach to allowing different names for the latitude variable
+    # Because of the way I have written the xarray code to use variable names, names are hard-coded in places
+    try:
+        nlats = len(invar['lat'])
+        latname = 'lat'
+    except KeyError:
+        nlats = len(invar['latitude'])
+        latname = 'latitude'
 
-        dy = getlatdist(invar['lat'].isel(lat = ilat+1),
-                            invar['lat'].isel(lat = ilat-1))
-        dvar = invar.isel(lat = ilat+1) - invar.isel(lat = ilat-1)
-        ddy.isel(lat = ilat)[...] = dvar/dy - (invar.isel(lat=ilat)/rearth) * np.tan(np.deg2rad(invar.lat.isel(lat=ilat)))
+    if latname == 'lat':
+        ddy = invar.copy(deep=True)
+        ddy.isel(lat=0)[...] = 0
 
-    ddy.isel(lat=nlats-1)[...] = 0
+        for ilat in range(1,nlats-1):
 
+            dy = getlatdist(invar['lat'].isel(lat = ilat+1),
+                                invar['lat'].isel(lat = ilat-1))
+            dvar = invar.isel(lat = ilat+1) - invar.isel(lat = ilat-1)
+            ddy.isel(lat = ilat)[...] = dvar/dy - (invar.isel(lat=ilat)/rearth) * np.tan(np.deg2rad(invar.lat.isel(lat=ilat)))
+
+        ddy.isel(lat=nlats-1)[...] = 0
+    elif latname == 'latitude':
+        ddy = invar.copy(deep=True)
+        ddy.isel(latitude=0)[...] = 0
+
+        for ilat in range(1,nlats-1):
+            dy = getlatdist(invar['latitude'].isel(latitude = ilat+1),
+                                invar['latitude'].isel(latitude = ilat-1))
+            dvar = invar.isel(latitude = ilat+1) - invar.isel(latitude = ilat-1)
+            ddy.isel(latitude = ilat)[...] = dvar/dy - (invar.isel(latitude=ilat)/rearth) * np.tan(np.deg2rad(invar.latitude.isel(latitude=ilat)))
+
+        ddy.isel(latitude=nlats-1)[...] = 0
     return(ddy)
 
 
@@ -153,25 +179,38 @@ def ddx(invar):
 
 
 def ddphi(invar):
-    dims = invar.dims
-    latidx = dims.index('lat')
-    ddphi = invar.copy(deep=True)
-    ddphi.isel(lat=0)[...] = 0
+    # Using this rather ugly approach to allowing different names for the latitude variable
+    # Because of the way I have written the xarray code to use variable names, names are hard-coded in places
 
-    dvar = np.gradient(invar,axis=latidx)
-    dlat = np.gradient(invar.lat)
+    try:
+        nlats = len(invar['lat'])
+        latname = 'lat'
+    except KeyError:
+        nlats = len(invar['latitude'])
+        latname = 'latitude'
 
-    dvardphi = dvar/dlat - (invar/rearth) * np.tan(np.deg2rad(invar.lat))
+    if latname == 'lat':
+        dims = invar.dims
+        latidx = dims.index('lat')
+        ddphi = invar.copy(deep=True)
+        ddphi.isel(lat=0)[...] = 0
 
-    for ilat in range(1,nlats-1):
-        dy = get_latdist(invar['lat'].isel(lat = ilat+1),
-                            invar['lat'].isel(lat = ilat-1))
-        dTH = invar.isel(lat = ilat+1) - invar.isel(lat = ilat-1)
-        ddy.isel(lat = ilat)[...] = dTH/dy
+        dvar = np.gradient(invar,axis=latidx)
+        dlat = np.gradient(invar.lat)
 
-    ddy.isel(lat=nlats-1)[...] = 0
+        dvardphi = dvar/dlat - (invar/rearth) * np.tan(np.deg2rad(invar.lat))
 
-    return(ddy)
+        latidx = dims.index('latitide')
+        ddphi = invar.copy(deep=True)
+        ddphi.isel(latitude=0)[...] = 0
+
+        dvar = np.gradient(invar,axis=latidx)
+        dlat = np.gradient(invar.latitude)
+
+        dvardphi = dvar/dlat - (invar/rearth) * np.tan(np.deg2rad(invar.latitude))
+
+    return(dvardphi)
+
 
 def div(invar):
     dvardphi = ddphi(invar)
