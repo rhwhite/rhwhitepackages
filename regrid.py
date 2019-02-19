@@ -13,7 +13,7 @@ import datetime as dt
 import re
 import sys
 import Ngl
-import xray
+import xarray
 import math
 import argparse
 import resource
@@ -84,20 +84,20 @@ def conserveRegrid(indata,latin,lonin,nsumlat,nsumlon):
 
     if nnewdims == 2:
         try:
-            newDA = xray.DataArray(new,coords=[('lat',latsnew),
+            newDA = xarray.DataArray(new,coords=[('lat',latsnew),
                                                ('lon',lonsnew)],
                                        attrs=[indata.attrs])
         except ValueError:
-            newDA = xray.DataArray(new,coords=[('lat',latsnew),
+            newDA = xarray.DataArray(new,coords=[('lat',latsnew),
                                                ('lon',lonsnew)])
     elif nnewdims == 3:
         try:
-            newDA = xray.DataArray(new,coords=[(newdims[0],indata[newdims[0]]),
+            newDA = xarray.DataArray(new,coords=[(newdims[0],indata[newdims[0]]),
                                                ('lat',latsnew),
                                                ('lon',lonsnew)],
                                        attrs=[indata.attrs])
         except ValueError:
-            newDA = xray.DataArray(new,coords=[(newdims[0],indata[newdims[0]]),
+            newDA = xarray.DataArray(new,coords=[(newdims[0],indata[newdims[0]]),
                                                ('lat',latsnew),
                                                ('lon',lonsnew)])
 

@@ -1,17 +1,17 @@
-# Module to read and write using xray with useful error messages
+# Module to read and write using xarray with useful error messages
 # Written by rhwhite rachel.white@cantab.net
 import numpy as np
 import datetime as dt
 #import pandas
-import xarray as xray
+import xarray as xarray
 import sys
 
-def xrayOpen(filenamein,decodetimes=True):
+def xarrayOpen(filenamein,decodetimes=True):
     try:
         if decodetimes:
-            filein= xray.open_dataset(filenamein)
+            filein= xarray.open_dataset(filenamein)
         else:
-            filein=xray.open_dataset(filenamein,decode_times=False)
+            filein=xarray.open_dataset(filenamein,decode_times=False)
     except MemoryError:
         sys.exit("need more memory to read in file " + str(filenamein))
     except (IOError, RuntimeError):
@@ -19,9 +19,9 @@ def xrayOpen(filenamein,decodetimes=True):
         sys.exit("couldn't find file")
     return filein
 
-def xrayMfOpen(filenamein,decodetimes=True,concat_dim='__infer_concat_dim__',autoclose=True):
+def xarrayMfOpen(filenamein,decodetimes=True,concat_dim='__infer_concat_dim__',autoclose=True):
     try:
-        filein=xray.open_mfdataset(filenamein,
+        filein=xarray.open_mfdataset(filenamein,
                                    decode_times=decodetimes,
                                    concat_dim = concat_dim,
                                    autoclose = autoclose)
@@ -187,7 +187,7 @@ def getrawPrecipAnn(Data,Version,minlat,maxlat,anstartyr,anendyr):
         sys.exit('not set up for Data type ' + Data + ' version ' + Version)
 
     # open up precip file
-    FileInPrecip = xrayOpen(PrecipClimDir + PrecipClimFile)
+    FileInPrecip = xarrayOpen(PrecipClimDir + PrecipClimFile)
 
     if Data in ['TRMM']:
         latin = FileInPrecip['latitude']
@@ -254,7 +254,7 @@ def geteventmapdata(idayin,timeres,var,filenamein,
     if timeres not in ['Ann','Mon']:
         sys.exit('sorry, don\'t understand time resolution ' + str(timeres))
 
-    file1 = xrayOpen(filenamein)
+    file1 = xarrayOpen(filenamein)
     lats = file1['lat']
     lons = file1['lon']
     years = file1['time'].sel(time = slice(str(startyr),str(endyr)))

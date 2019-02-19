@@ -8,7 +8,7 @@ import os, errno
 import numpy as np
 import datetime as dt
 import pandas
-import xarray as xray
+import xarray as xarray
 from scipy import stats
 
 dayinmon = [31,28,31,30,31,30,31,31,30,31,30,31]

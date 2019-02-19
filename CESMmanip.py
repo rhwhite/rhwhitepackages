@@ -10,7 +10,7 @@ import netCDF4
 import numpy as np
 import datetime as dt
 import pandas as pd
-import xray as xr
+import xarray as xr
 import calendar
 from rhwhitepackages.CESMconst import *
 
