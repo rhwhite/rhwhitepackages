@@ -1,7 +1,7 @@
 # Module to FFT and extract wavenumbers 0, 1 and 2 using np.fft
 # Written by rhwhite rachel.white@cantab.net
 import numpy as np
-import xray
+import xarray
 import math
 
 def getFFT(var,norm):

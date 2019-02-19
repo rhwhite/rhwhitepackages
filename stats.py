@@ -5,7 +5,7 @@ import netCDF4
 import numpy as np
 import datetime as dt
 import pandas
-import xray
+import xarray
 from scipy import stats
 
 def regressmaps(m,c,r,p,stderr,A,linreg,nlats,nlons):

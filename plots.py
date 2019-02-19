@@ -1,11 +1,11 @@
-# Module to read and write using xray with useful error messages
+# Module to read and write using xarray with useful error messages
 # Written by rhwhite rachel.white@cantab.net
 from netCDF4 import Dataset
 import netCDF4
 import numpy as np
 import datetime as dt
 import pandas
-import xray
+import xarray
 import Ngl
 from rhwhitepackages.readwrite import *
 

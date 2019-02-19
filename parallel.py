@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.ma as ma
-import xray
+import xarray
 import netCDF4
 from netCDF4 import Dataset
 

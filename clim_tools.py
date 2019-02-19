@@ -20,7 +20,7 @@ from scipy.interpolate import interp1d
 from scipy import interpolate
 
 from rhwhitepackages.readwrite import shiftlons
-from rhwhitepackages.readwrite import xrayOpen, xrayMfOpen
+from rhwhitepackages.readwrite import xarrayOpen, xarrayMfOpen
 from rhwhitepackages.stats import regressmaps
 
 def smooth_clim_from_monthly(varin,ndaysyear,yearin,typein):
