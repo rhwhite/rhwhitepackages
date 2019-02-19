@@ -176,8 +176,6 @@ def ddx(invar):
 
     return(ddx)
 
-
-
 def ddphi(invar):
     # Using this rather ugly approach to allowing different names for the latitude variable
     # Because of the way I have written the xarray code to use variable names, names are hard-coded in places
@@ -200,7 +198,11 @@ def ddphi(invar):
 
         dvardphi = dvar/dlat - (invar/rearth) * np.tan(np.deg2rad(invar.lat))
 
-        latidx = dims.index('latitide')
+    elif latname == 'latitude':
+        dims = invar.dims
+        print dims
+        print dims.index
+        latidx = dims.index('latitude')
         ddphi = invar.copy(deep=True)
         ddphi.isel(latitude=0)[...] = 0
 

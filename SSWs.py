@@ -8,6 +8,7 @@
 import numpy as np
 import xarray
 import math
+import sys
 
 def adddays(U,itime,ndays):
     # Find ndays consecutive days with easterlies
@@ -23,17 +24,19 @@ def adddays(U,itime,ndays):
         itime += 1
     return(itime,numcons,True)
 
-def meanSE(N,in0,in1,in2):
+def meanSE(N,in0,in1,in2,in3=0):
     # Calculate mean and standard error of number of SSWs
     # a la Charlton and Polvani (2007)
     p0 = float(in0)/float(N)
     p1 = float(in1)/float(N)
     p2 = float(in2)/float(N)
+    p3 = float(in3)/float(N)
 
-    calcmean = p1 + (2 * p2)
+    calcmean = p1 + (2 * p2) + (3 * p3)
     calcSE = ((math.sqrt(((0-calcmean)**2 * p0) +
                         ((1-calcmean)**2 * p1) +
-                        ((2-calcmean)**2 * p2)))
+                        ((2-calcmean)**2 * p2) + 
+                        ((3-calcmean)**2 * p3)))
                 /math.sqrt(N))
     return calcmean,calcSE
 
@@ -108,6 +111,7 @@ def findSSWs(U,thresh,Obs=False,startyr = 0):
     yearcount = 0
     singleyear = 0
     doubleyear = 0
+    tripleyear = 0
     final = []
     nyears = len(U.time)//365
     times = U.time
@@ -132,6 +136,9 @@ def findSSWs(U,thresh,Obs=False,startyr = 0):
     elif yearcount ==2:
         doubleyear +=1
         #if toprint: print('year 0 2 SSWs \n')
+        SSWyears.append(0)
+    elif yearcount ==3:
+        tripleyear +=1
         SSWyears.append(0)
     final.append(finalW)
 
@@ -162,10 +169,15 @@ def findSSWs(U,thresh,Obs=False,startyr = 0):
             doubleyear +=1
             #if toprint: print('year ' + str(iyear +1) + ' 2 SSWs \n')
             SSWyears.append(iyear + 1)
+        elif yearcount ==3:
+            tripleyear +=1
+            SSWyears.append(iyear + 1)
         final.append(finalW)
 
-    if singleyear + 2 * doubleyear != count:
-        sys.exit("problem with counting, maybe a year with more than 2 SSWs?!")
+    if singleyear + 2 * doubleyear +3 * tripleyear != count:
+        print(count)
+        print(singleyear + 2 * doubleyear +3 * tripleyear)
+        sys.exit("problem with counting, maybe a year with more than 3 SSWs?!")
 
     mean,SE = meanSE(nyears,nyears - singleyear - doubleyear,singleyear,doubleyear)
     print ('mean: ' + str(mean) + ' ; s.e.: ' + str(SE) )
