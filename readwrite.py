@@ -6,7 +6,7 @@ import datetime as dt
 import xarray as xarray
 import sys
 
-def xarrayOpen(filenamein,decodetimes=True):
+def xrOpen(filenamein,decodetimes=True):
     try:
         if decodetimes:
             filein= xarray.open_dataset(filenamein)
@@ -19,7 +19,7 @@ def xarrayOpen(filenamein,decodetimes=True):
         sys.exit("couldn't find file")
     return filein
 
-def xarrayMfOpen(filenamein,decodetimes=True,concat_dim='__infer_concat_dim__',autoclose=True):
+def xrMfOpen(filenamein,decodetimes=True,concat_dim='__infer_concat_dim__',autoclose=True):
     try:
         filein=xarray.open_mfdataset(filenamein,
                                    decode_times=decodetimes,
