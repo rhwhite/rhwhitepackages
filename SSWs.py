@@ -104,8 +104,11 @@ def findSSWs(U,thresh,Obs=False,startyr = 0):
     toprint = False
     SSWyears = []
     startdate = 303 # beginning of November
-    lastdate = 119 # end of April 
-    enddate = 119 # 30th April
+    #lastdate = 119 # end of April 
+    #enddate = 119 # 30th April
+
+    lastdate = 91 # end of March
+    enddate = 91 # end of March
 
     count = 0
     yearcount = 0
@@ -118,13 +121,13 @@ def findSSWs(U,thresh,Obs=False,startyr = 0):
 
     # Select first year
     if Obs:
-        yearU = U.sel(time=slice(str(startyr) + '-01',str(startyr) + '-04'))
+        yearU = U.sel(time=slice(str(startyr) + '-01',str(startyr) + '-03-31'))
         yeartime = times.sel(time=slice(str(startyr) + '-01',
-                                            str(startyr) +'-04'))
+                                            str(startyr) +'-03-31'))
         yeartime = (yeartime.values - np.datetime64('1980-01-01'))/ np.timedelta64(1, 'D')
     else:
-        yearU = U.isel(time=slice(0,120))
-        yeartime = times[0:120].values
+        yearU = U.isel(time=slice(0,91))
+        yeartime = times[0:91].values
 
     count,yearcount,finalW,SSWdates = findyearSSWs(yearU,yeartime,count,thresh,
                                                 lastdate,startdate,
@@ -144,10 +147,10 @@ def findSSWs(U,thresh,Obs=False,startyr = 0):
 
     for iyear in range(0,nyears):
         if Obs:
-            yearU = U.sel(time=slice(str(startyr+iyear) +'-11',
-                                    str(startyr+iyear+1) + '-04'))
-            yeartime = times.sel(time=slice(str(startyr+iyear) + '-11',
-                                            str(startyr+iyear+1) +'-04'))
+            yearU = U.sel(time=slice(str(startyr+iyear) +'-11-01',
+                                    str(startyr+iyear+1) + '-03-31'))
+            yeartime = times.sel(time=slice(str(startyr+iyear) + '-11-01',
+                                            str(startyr+iyear+1) +'-03-31'))
             yeartime = ((yeartime.values - np.datetime64('1980-01-01'))/
                                     np.timedelta64(1, 'D'))
 

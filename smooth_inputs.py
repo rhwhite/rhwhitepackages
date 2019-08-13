@@ -58,7 +58,7 @@ def replacetemps_pop(ocnstart,ocnend,landstart,landend,imonth,ilat,ssts_in):
     interptemp = np.linspace(starttemp,endtemp,numlons)
     return(interptemp)
 
-def smooth_SSTs(datain,K = True):
+def smooth_SSTs(datain,maskin,K = True):
     data = datain.copy(deep=True)
 
     # Maybe need this depending on the type of input data:
@@ -66,7 +66,7 @@ def smooth_SSTs(datain,K = True):
         data = data - 273.15
 
     # Mask data with various ways to make sure all invalid data is masked
-    ssts.values= np.where(maskin >= 1,-1000.0,ssts.values)
+    data.values= np.where(maskin >= 1,-1000.0,data.values)
 
     data.values = np.where(data.values < -100,np.nan,data.values)
     data.values = np.where(data.values < -1.8, -1.8, data.values)
@@ -132,7 +132,7 @@ def smooth_SSTs(datain,K = True):
     DATA_new = data_new.to_dataset(name='SST_cpl')
     return(DATA_new)
 
-def smooth_CICE(datain,K = True):
+def smooth_CICE(datain,maskin,K = True):
     # Smooth ice field
     ice_new = datain
 
