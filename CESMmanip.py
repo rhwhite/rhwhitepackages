@@ -108,7 +108,7 @@ def ddy(invar):
     # H.B. Bluestein [Synoptic-Dynamic Meteorology in Midlatitudes, 1992, Oxford Univ. Press p113-114]
 
     # Using this rather ugly approach to allowing different names for the latitude variable
-    # Because of the way I have written the xarray code to use variable names, names are hard-coded in places
+    # Because of the way I have written the xr code to use variable names, names are hard-coded in places
     try:
         nlats = len(invar['lat'])
         latname = 'lat'
@@ -178,7 +178,7 @@ def ddx(invar):
 
 def ddphi(invar):
     # Using this rather ugly approach to allowing different names for the latitude variable
-    # Because of the way I have written the xarray code to use variable names, names are hard-coded in places
+    # Because of the way I have written the xr code to use variable names, names are hard-coded in places
 
     try:
         nlats = len(invar['lat'])

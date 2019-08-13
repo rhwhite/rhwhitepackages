@@ -1,6 +1,6 @@
 '''
 Custom diagnostics for CESM / CAM model output
-This package is built on top of `xarray` which provides the underlying
+This package is built on top of `xr` which provides the underlying
 grid-aware data structures.
 The method `open_dataset()` wraps the `xr.open_dataset()` method
 and attempts to compute a bunch of useful diagnostics in addition to returning
@@ -15,7 +15,7 @@ Jan 2018
 import numpy as np
 import xarray as xr
 from scipy import integrate
-from xarray.ufuncs import sin, cos, deg2rad
+from xr.ufuncs import sin, cos, deg2rad
 #from climlab import thermo
 
 C2K = 273.15  # conversion factor from C to K

@@ -6,7 +6,7 @@
 # Created July 2017
 
 import numpy as np
-import xarray
+import xarray as xr
 import math
 import sys
 

@@ -1,7 +1,7 @@
 # Module to FFT and extract wavenumbers 0, 1 and 2 using np.fft
 # Written by rhwhite rachel.white@cantab.net
 import numpy as np
-import xarray
+import xarray as xr
 import math
 
 def getFFT(var,norm):
@@ -63,7 +63,7 @@ def stat_trans_stats(Daily,lat,lon):
 
         DJF_trans = DJF_daily - DJF_stat
 
-        # make xarray again
+        # make xr again
         DJF_stat = xr.DataArray(DJF_stat, dims=['lat','lon'],
                            coords=[Z_Dec.lat,Z_Dec.lon])
         DJF_trans = xr.DataArray(DJF_trans, dims=['time','lat','lon'],
